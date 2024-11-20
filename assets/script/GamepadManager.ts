@@ -154,6 +154,10 @@ class GamepadComp extends Component {
 
         const buttons = gamepads[0].buttons;
         for (let i = 0; i < buttons.length; i++) {
+            if (i > GamepadKeyList.length - 1) {
+                break;
+            }
+
             const button = buttons[i];
             const key = GamepadKeyList[i];
             const state = this._buttonStates[key] as TGamepadButtonState;
@@ -162,7 +166,7 @@ class GamepadComp extends Component {
                 if (!state.pressed) {
                     state.pressed = true;
                     this._buttonListeners.forEach(e => e[0]?.call(e[1], key, EGamepadKeyState.KEY_DOWN, 1.0));
-                    console.log('Button down:', EGamepadKey[key]);
+                    // console.log('Button down:', EGamepadKey[key]);
                 } else {
                     if (state.useValue) {
                         this._buttonListeners.forEach(e => e[0]?.call(e[1], key, EGamepadKeyState.KEY_DOWN, button.value));
@@ -172,7 +176,7 @@ class GamepadComp extends Component {
                 if (state.pressed) {
                     state.pressed = false;
                     this._buttonListeners.forEach(e => e[0]?.call(e[1], key, EGamepadKeyState.KEY_UP, 0));
-                    console.log('Button up:', EGamepadKey[key]);
+                    // console.log('Button up:', EGamepadKey[key]);
                 }
             }
         }
@@ -204,10 +208,10 @@ export class GamepadManager {
         }
 
         const node = new Node('gamepad-manager-1.0.0');
+        this._gamepadCom = node.addComponent(GamepadComp);
+
         director.getScene().addChild(node);
         director.addPersistRootNode(node);
-
-        this._gamepadCom = node.addComponent(GamepadComp);
     }
 
     destroy() {
@@ -216,18 +220,18 @@ export class GamepadManager {
     }
 
     addButtonListener(listener: TGamepadButtonListener, target?: any) {
-        this._gamepadCom.addButtonListener(listener, target);
+        this._gamepadCom?.addButtonListener(listener, target);
     }
 
     removeButtonListener(listener: TGamepadButtonListener, target?: any) {
-        this._gamepadCom.addButtonListener(listener, target);
+        this._gamepadCom?.addButtonListener(listener, target);
     }
 
     addAxeListener(listener: TGamepadButtonListener, target?: any) {
-        this._gamepadCom.addAxeListener(listener, target);
+        this._gamepadCom?.addAxeListener(listener, target);
     }
 
     removeAxeListener(listener: TGamepadButtonListener, target?: any) {
-        this._gamepadCom.addAxeListener(listener, target);
+        this._gamepadCom?.addAxeListener(listener, target);
     }
 }
