@@ -81,6 +81,8 @@ class GamepadComp extends Component {
         [EGamepadKey.RIGHT]: { useValue: false, pressed: false },
     }
 
+    private _axeStates: [number, number, number, number] = [0, 0, 0, 0];
+
     addButtonListener(listener: TGamepadButtonListener, target?: any) {
         const index = this._buttonListeners.findIndex(e => e[0] === listener && e[1] === target);
         if (index > -1) {
@@ -158,18 +160,17 @@ class GamepadComp extends Component {
                 break;
             }
 
-            const button = buttons[i];
             const key = GamepadKeyList[i];
             const state = this._buttonStates[key] as TGamepadButtonState;
 
-            if (button.pressed) {
+            if (buttons[i].pressed) {
                 if (!state.pressed) {
                     state.pressed = true;
                     this._buttonListeners.forEach(e => e[0]?.call(e[1], key, EGamepadKeyState.KEY_DOWN, 1.0));
                     // console.log('Button down:', EGamepadKey[key]);
                 } else {
                     if (state.useValue) {
-                        this._buttonListeners.forEach(e => e[0]?.call(e[1], key, EGamepadKeyState.KEY_DOWN, button.value));
+                        this._buttonListeners.forEach(e => e[0]?.call(e[1], key, EGamepadKeyState.KEY_DOWN, buttons[i].value));
                     }
                 }
             } else {
@@ -181,11 +182,21 @@ class GamepadComp extends Component {
             }
         }
 
-        //TODO 实现axe
-        // const axes = gamepads[0].axes;
-        // for (let i = 0; i < axes.length; i++) {
-        //     console.log(axes);
-        // }
+        const axes = gamepads[0].axes;
+        if (!axes || axes.length !== 4) {
+            return;
+        }
+
+        if (this._axeStates[0] !== axes[0] ||
+            this._axeStates[1] !== axes[1] ||
+            this._axeStates[2] !== axes[2] ||
+            this._axeStates[3] !== axes[3]) {
+            this._axeStates[0] = axes[0];
+            this._axeStates[1] = axes[1];
+            this._axeStates[2] = axes[2];
+            this._axeStates[3] = axes[3];
+            this._axeListeners.forEach(e => e[0]?.call(e[1], axes[0], axes[1], axes[2], axes[3]));
+        }
     }
 }
 
@@ -227,11 +238,19 @@ export class GamepadManager {
         this._gamepadCom?.addButtonListener(listener, target);
     }
 
-    addAxeListener(listener: TGamepadButtonListener, target?: any) {
+    /**
+     * lx: left to right [-1, 1]
+     * ly: top to bottom [-1, 1]
+     * rx: left to right [-1, 1]
+     * ry: top to bottom [-1, 1]
+     * @param listener (lx: number, ly: number, rx: number, ry: number) => void
+     * @param target any
+     */
+    addAxeListener(listener: TGamepadAxeListener, target?: any) {
         this._gamepadCom?.addAxeListener(listener, target);
     }
 
-    removeAxeListener(listener: TGamepadButtonListener, target?: any) {
+    removeAxeListener(listener: TGamepadAxeListener, target?: any) {
         this._gamepadCom?.addAxeListener(listener, target);
     }
 }
